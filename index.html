@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轻松记账 - 语音记账本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .total-amount {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .voice-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .voice-btn.listening {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .records-section {
+            margin-top: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .record-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+
+        .record-item:hover {
+            transform: translateX(5px);
+        }
+
+        .record-info {
+            flex: 1;
+        }
+
+        .record-category {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .record-note {
+            color: #666;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .record-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .record-time {
+            color: #999;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .delete-btn {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border: none;
+            background: #fee;
+            color: #e74c3c;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        /* 分类颜色 */
+        .category-餐饮 { background: #ff6b6b; }
+        .category-交通 { background: #4ecdc4; }
+        .category-购物 { background: #45b7d1; }
+        .category-娱乐 { background: #96ceb4; }
+        .category-医疗 { background: #dfe6e9; }
+        .category-教育 { background: #fdcb6e; }
+        .category-居住 { background: #6c5ce7; }
+        .category-其他 { background: #b2bec3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部统计 -->
+        <div class="header">
+            <h1>💰 轻松记账</h1>
+            <div class="total-amount">¥<span id="totalAmount">0.00</span></div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-label">今日</div>
+                    <div class="stat-value">¥<span id="todayAmount">0.00</span></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">本周</div>
+                    <div class="stat-value">¥<span id="weekAmount">0.00</span></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">本月</div>
+                    <div class="stat-value">¥<span id="monthAmount">0.00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 输入区域 -->
+            <div class="input-section">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('voice')">🎤 语音记账</button>
+                    <button class="tab-btn" onclick="switchTab('manual')">✍️ 手动输入</button>
+                </div>
+
+                <!-- 语音输入 -->
+                <div id="voiceInput">
+                    <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecognition()">
+                        <span>🎤</span>
+                        <span id="voiceBtnText">点击说话记账</span>
+                    </button>
+                    <p style="text-align: center; color: #999; font-size: 13px; margin-top: 10px;">
+                        示例："今天吃饭花了 50 元"、"打车 25 块"、"购物 199 元"
+                    </p>
+                </div>
+
+                <!-- 手动输入 -->
+                <div id="manualInput" style="display: none;">
+                    <div class="input-group">
+                        <label>金额 *</label>
+                        <input type="number" id="manualAmount" placeholder="请输入金额" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>分类 *</label>
+                        <select id="manualCategory">
+                            <option value="">请选择分类</option>
+                            <option value="餐饮">🍜 餐饮</option>
+                            <option value="交通">🚗 交通</option>
+                            <option value="购物">🛍️ 购物</option>
+                            <option value="娱乐">🎬 娱乐</option>
+                            <option value="医疗">🏥 医疗</option>
+                            <option value="教育">📚 教育</option>
+                            <option value="居住">🏠 居住</option>
+                            <option value="其他">📦 其他</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>备注</label>
+                        <input type="text" id="manualNote" placeholder="可选，如：午餐、地铁等">
+                    </div>
+                    <button class="submit-btn" onclick="addManualRecord()">记一笔</button>
+                </div>
+            </div>
+
+            <!-- 记录列表 -->
+            <div class="records-section">
+                <div class="section-title">
+                    <span>📋 记账记录</span>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="filterRecords('all')">全部</button>
+                        <button class="filter-btn" onclick="filterRecords('today')">今日</button>
+                        <button class="filter-btn" onclick="filterRecords('week')">本周</button>
+                        <button class="filter-btn" onclick="filterRecords('month')">本月</button>
+                    </div>
+                </div>
+                <div class="record-list" id="recordList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>还没有记账记录</p>
+                        <p style="font-size: 13px; margin-top: 5px;">点击上方按钮开始记账吧~</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化数据
+        let records = JSON.parse(localStorage.getItem('expenseRecords')) || [];
+        let currentFilter = 'all';
+        let isListening = false;
+        let recognition = null;
+
+        // 检查浏览器是否支持语音识别
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'zh-CN';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                parseVoiceCommand(transcript);
+            };
+
+            recognition.onerror = function(event) {
+                console.error('语音识别错误:', event.error);
+                alert('语音识别失败，请重试或使用手动输入');
+                stopListening();
+            };
+
+            recognition.onend = function() {
+                stopListening();
+            };
+        } else {
+            document.getElementById('voiceBtn').disabled = true;
+            document.getElementById('voiceBtnText').textContent = '您的浏览器不支持语音功能';
+        }
+
+        // 切换标签页
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'voice') {
+                document.getElementById('voiceInput').style.display = 'block';
+                document.getElementById('manualInput').style.display = 'none';
+            } else {
+                document.getElementById('voiceInput').style.display = 'none';
+                document.getElementById('manualInput').style.display = 'block';
+            }
+        }
+
+        // 切换语音识别
+        function toggleVoiceRecognition() {
+            if (!recognition) return;
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById('voiceBtn').classList.add('listening');
+                document.getElementById('voiceBtnText').textContent = '正在听...';
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            document.getElementById('voiceBtn').classList.remove('listening');
+            document.getElementById('voiceBtnText').textContent = '点击说话记账';
+        }
+
+        // 解析语音命令
+        function parseVoiceCommand(text) {
+            // 提取金额（支持多种格式）
+            const amountMatch = text.match(/(\d+\.?\d*)\s*(元|块|￥|yuan)/);
+            if (!amountMatch) {
+                alert('未识别到金额，请说清楚金额，如"吃饭花了 50 元"');
+                return;
+            }
+            
+            const amount = parseFloat(amountMatch[1]);
+            
+            // 自动识别分类
+            let category = '其他';
+            const categoryKeywords = {
+                '餐饮': ['吃', '饭', '餐', '饮', '食', '菜', '面', '米', '肉', '外卖', '餐厅', '饭店'],
+                '交通': ['车', '交通', '行', '地铁', '公交', '出租', '打车', '火车', '飞机', '船'],
+                '购物': ['买', '购', '物', '衣服', '鞋', '包', '手机', '电脑', '超市', '商场'],
+                '娱乐': ['玩', '乐', '电影', '游戏', 'KTV', '唱歌', '旅游', '景点', '票'],
+                '医疗': ['医', '药', '病', '医院', '诊所', '体检'],
+                '教育': ['学', '书', '课', '培训', '考试', '学校'],
+                '居住': ['房', '租', '住', '水电', '物业', '装修']
+            };
+            
+            for (const [cat, keywords] of Object.entries(categoryKeywords)) {
+                if (keywords.some(keyword => text.includes(keyword))) {
+                    category = cat;
+                    break;
+                }
+            }
+            
+            // 添加记录
+            addRecord({
+                amount: amount,
+                category: category,
+                note: text.replace(/(\d+\.?\d*)\s*(元|块|￥|yuan)/, '').trim(),
+                time: new Date().toISOString()
+            });
+        }
+
+        // 手动添加记录
+        function addManualRecord() {
+            const amount = parseFloat(document.getElementById('manualAmount').value);
+            const category = document.getElementById('manualCategory').value;
+            const note = document.getElementById('manualNote').value.trim();
+            
+            if (!amount || amount <= 0) {
+                alert('请输入有效金额');
+                return;
+            }
+            
+            if (!category) {
+                alert('请选择分类');
+                return;
+            }
+            
+            addRecord({
+                amount: amount,
+                category: category,
+                note: note,
+                time: new Date().toISOString()
+            });
+            
+            // 清空输入
+            document.getElementById('manualAmount').value = '';
+            document.getElementById('manualCategory').value = '';
+            document.getElementById('manualNote').value = '';
+        }
+
+        // 添加记录
+        function addRecord(record) {
+            records.unshift(record);
+            saveRecords();
+            renderRecords();
+            updateStats();
+        }
+
+        // 删除记录
+        function deleteRecord(index) {
+            if (confirm('确定要删除这条记录吗？')) {
+                records.splice(index, 1);
+                saveRecords();
+                renderRecords();
+                updateStats();
+            }
+        }
+
+        // 保存记录
+        function saveRecords() {
+            localStorage.setItem('expenseRecords', JSON.stringify(records));
+        }
+
+        // 筛选记录
+        function filterRecords(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderRecords();
+        }
+
+        // 渲染记录列表
+        function renderRecords() {
+            const listEl = document.getElementById('recordList');
+            
+            let filteredRecords = records;
+            const now = new Date();
+            
+            if (currentFilter === 'today') {
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                filteredRecords = records.filter(r => new Date(r.time) >= todayStart);
+            } else if (currentFilter === 'week') {
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                filteredRecords = records.filter(r => new Date(r.time) >= weekAgo);
+            } else if (currentFilter === 'month') {
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                filteredRecords = records.filter(r => new Date(r.time) >= monthStart);
+            }
+            
+            if (filteredRecords.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>还没有记账记录</p>
+                        <p style="font-size: 13px; margin-top: 5px;">点击上方按钮开始记账吧~</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            listEl.innerHTML = filteredRecords.map((record, index) => {
+                const originalIndex = records.indexOf(record);
+                const time = new Date(record.time);
+                const timeStr = time.toLocaleString('zh-CN', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div class="record-item">
+                        <div class="record-info">
+                            <span class="record-category category-${record.category}">${record.category}</span>
+                            <div class="record-amount">-¥${record.amount.toFixed(2)}</div>
+                            ${record.note ? `<div class="record-note">${record.note}</div>` : ''}
+                            <div class="record-time">${timeStr}</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteRecord(${originalIndex})">删除</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 更新统计
+        function updateStats() {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            
+            const total = records.reduce((sum, r) => sum + r.amount, 0);
+            const today = records.filter(r => new Date(r.time) >= todayStart).reduce((sum, r) => sum + r.amount, 0);
+            const week = records.filter(r => new Date(r.time) >= weekAgo).reduce((sum, r) => sum + r.amount, 0);
+            const month = records.filter(r => new Date(r.time) >= monthStart).reduce((sum, r) => sum + r.amount, 0);
+            
+            document.getElementById('totalAmount').textContent = total.toFixed(2);
+            document.getElementById('todayAmount').textContent = today.toFixed(2);
+            document.getElementById('weekAmount').textContent = week.toFixed(2);
+            document.getElementById('monthAmount').textContent = month.toFixed(2);
+        }
+
+        // 初始化
+        renderRecords();
+        updateStats();
+    </script>
+</body>
+</html>
